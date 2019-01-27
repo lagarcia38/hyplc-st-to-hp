@@ -22,7 +22,7 @@ configuration:
 'END_CONFIGURATION';
 
 resource_declaration:
-'RESOURCE' name=ID 'ON' resource_type_name
+'RESOURCE' name=ID 'ON' resource_type_name=ID
 single_resource_declaration
 'END_RESOURCE';
 
@@ -34,7 +34,7 @@ task_configuration:
 'TASK' name=ID task_initialization;
 
 task_initialization:
-'(' ('SINGLE' ':=' data_source ',')? 'INTERVAL' ':=' interval_time ',' 'PRIORITY' ':=' Decimal_literal ')';
+'(' ('SINGLE' ':=' Decimal_literal ',')? 'INTERVAL' ':=' interval_time ',' 'PRIORITY' ':=' Decimal_literal ')';
 
 interval_time:
 'T' '#' Decimal_literal time_unit;
@@ -55,7 +55,7 @@ type_rule:
 name=ID #simpleType;
 
 variable_declaration:
-names+=ID (',' names+=ID)* ':' type=type_rule ;
+names+=ID (',' names+=ID)* ':' var_type=type_rule ;
 
 program_block_body:
 statement_list;
@@ -73,7 +73,7 @@ if_then_else_statement:
 'IF' expression 'THEN' statement_list
 ('ELSIF' expression 'THEN' statement_list)*
 ('ELSE' statement_list)?
-'END_IF'
+'END_IF';
 
 variable:
 name=ID;
@@ -109,7 +109,7 @@ multiply_operator:
 '*' | '/';
 
 power_expression:
-unary_expression (’**’ unary_expression)*;
+unary_expression ('**' unary_expression)*;
 
 unary_expression:
 unary_operator? primary_expression;
@@ -120,7 +120,7 @@ primary_expression:
 literal | variable | '(' expression ')';
 
 literal:
-numeric_literal | bollean_literal;
+numeric_literal | boolean_literal;
 
 boolean_literal: 'TRUE' | 'FALSE';
 
@@ -172,3 +172,5 @@ ID: [A-Za-z][A-Za-z_0-9]*;
 NIL: WS;
 WS : [ \n\r\t]+ -> channel(HIDDEN) ;
 Block_comment : '(*' (Block_comment|.)*? '*)' -> channel(HIDDEN) ; // nesting comments allowed
+
+ANY : . ;

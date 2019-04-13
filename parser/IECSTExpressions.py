@@ -52,17 +52,24 @@ class Resource:
 		self.name : str = name
 		self.resourceTypeName : str = resourceTypeName
 		self.taskConfiguration : TaskConfiguration = taskConfiguration
-		self.programConfiguration : TaskConfiguration = programConfiguration
+		self.programConfiguration : ProgramConfiguration = programConfiguration
 
 class TaskConfiguration:
 
 	name = None
+	taskInitialization = None
+
+	def __init__(self, name, taskInitialization):
+		self.name : str = name
+		self.taskInitialization : TaskInitialization = taskInitialization
+
+class TaskInitialization:
+
 	single = None # Boolean if it is a single task; Not required
 	interval = None # Task execution scan cycle time
 	priority = None # Priority of task; Currently not relevant
 
-	def __init__(self, name, interval, priority, single = None):
-		self.name : str = name
+	def __init__(self, interval, priority, single=None):
 		self.interval : TimeInterval = interval
 		self.priority : int = priority
 		self.single: int = single
@@ -75,6 +82,17 @@ class TimeInterval:
 	def __init__(self, value, timeUnit):
 		self.value : int = value
 		self.timeUnit : str = timeUnit
+
+class ProgramConfiguration:
+
+	instName = None
+	taskName = None
+	progName = None
+
+	def __init__(self, instName, taskName, progName):
+		self.instName = instName
+		self.taskName = taskName
+		self.progName = progName
 
 ########################################################################
 # VarBlock Classes

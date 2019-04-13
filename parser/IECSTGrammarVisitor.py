@@ -36,42 +36,64 @@ class IECSTGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IECSTGrammarParser#configuration.
     def visitConfiguration(self, ctx:IECSTGrammarParser.ConfigurationContext):
-        return self.visitChildren(ctx)
+        name : str = ctx.name().getText()
+        resourceDeclarations : List[ResourceDeclaration] = []
+        for resourceDeclaration in ctx.resource_declaration():
+            resourceDeclarations.append(self.visitResource_declaration(ctx.resource_declaration()))
+        self.conifg = Configuration(name, resourceDeclarations)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#resource_declaration.
     def visitResource_declaration(self, ctx:IECSTGrammarParser.Resource_declarationContext):
-        return self.visitChildren(ctx)
-
+        name : str = ctx.name().getText()
+        resourceTypeName: str = ctx.resource_type_name().getText()
+        tmpResource : ResourceDeclaration = self.visitChildren(ctx)
+        return ResourceDeclaration(tmpResource.taskConfiguration, tmpResource.programConfiguration, name, resourceTypeName)
 
     # Visit a parse tree produced by IECSTGrammarParser#single_resource_declaration.
     def visitSingle_resource_declaration(self, ctx:IECSTGrammarParser.Single_resource_declarationContext):
-        return self.visitChildren(ctx)
+        taskConfiguration : TaskConfiguration = self.visitTask_configuration(ctx.task_configuration())
+        programConfiguration : ProgramConfiguration = self.visitProgram_configuration(ctx.program_configuration())
+        return ResourceDeclaration(taskConfiguration, programConfiguration)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#task_configuration.
     def visitTask_configuration(self, ctx:IECSTGrammarParser.Task_configurationContext):
-        return self.visitChildren(ctx)
+        name : str = ctx.name().getText()
+        taskInitialization : TaskInitialization = self.visitTask_initialization(ctx.task_initialization())
+        return TaskConfiguration(name, taskInitialization)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#task_initialization.
     def visitTask_initialization(self, ctx:IECSTGrammarParser.Task_initializationContext):
-        return self.visitChildren(ctx)
+        intervalTime : TimeInterval = self.visitInterval_time(ctx.interval_time())
+        if len(ctx.Decimal_interval() > 1):
+            single: int = int(ctx.Decimal_interval()[0].getText())
+            priority: int = int(ctx.Decimal_interval()[1].getText())
+        else:
+            priority: int = int(ctx.Decimal_interval()[0]).getText()
+
+        return TaskInitialization()
 
 
     # Visit a parse tree produced by IECSTGrammarParser#interval_time.
     def visitInterval_time(self, ctx:IECSTGrammarParser.Interval_timeContext):
-        return self.visitChildren(ctx)
+        value : int = int(ctx.Decimal_interval().getText())
+        timeUnit : str = self.visitTime_unit(ctx.time_unit())
+        return TimeInterval(value, timeUnit)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#time_unit.
     def visitTime_unit(self, ctx:IECSTGrammarParser.Time_unitContext):
-        return self.visitChildren(ctx)
+        return ctx.getText()
 
 
     # Visit a parse tree produced by IECSTGrammarParser#program_configuration.
     def visitProgram_configuration(self, ctx:IECSTGrammarParser.Program_configurationContext):
-        return self.visitChildren(ctx)
+        instName : str = ctx.inst_name().getText()
+        taskName : str = ctx.task_name().getText()
+        progName : str = ctx.prog_name().getText()
+        return ProgramConfiguration(instName, taskName, progName)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#var_block.

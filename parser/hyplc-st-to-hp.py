@@ -3,24 +3,12 @@ from antlr4 import *
 from IECSTGrammarLexer import IECSTGrammarLexer
 from IECSTGrammarParser import IECSTGrammarParser
 from IECSTGrammarVisitor import IECSTGrammarVisitor
-from STExpressions import *
-from STPrettyPrinter import *
+from IECSTExpressions import *
+from IECSTPrettyPrinter import *
 from typing import List
 
 # Read a number of ST configuration files into this list
 configs: List[ConfigurationFile] = []
-
-
-################################################################
-# HP Pretty Printer functions
-################################################################
-def configuration_to_string(stConfigFile: ConfigurationFile):
-    selectorString = ""
-    for logical_predicate in cep.logicalPredicateList:
-        selectorString = selectorString + problog_expression_to_string(logical_predicate)
-        selectorString = selectorString + " AND \n"
-    selectorString = selectorString + " TRUE"
-    return selectorString
 
 
 def process_st_file(st_file):

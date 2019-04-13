@@ -1,0 +1,49 @@
+/*
+ *  SWaT Testbed Process P1: Tank 1 Inflow/Outflow
+ *  @author Luis Garcia
+ */
+ProgramVariables.
+  R x1.            /* water level in tank 1*/
+  R x2.            /* water level in tank 2*/
+  R f1.            /* flow rate 1  */
+  R f2.            /* flow rate 2  */
+  R V1.            /* valve 1(open or closed) */
+  R V2.            /* valve 1(open or closed) */
+  R H1.            /* water level upper trigger threshold tank 1*/
+  R H2.            /* water level upper trigger threshold tank 2*/
+  R L1.            /* water level lower trigger threshold tank 1*/
+  R L2.            /* water level lower trigger threshold tank 2*/
+  R HH.            /* water level upper threshold alarm*/
+  R LL.            /* water level lower threshold alarm */
+  R FL.            /* Flow rate lower threshold alarm */
+  R P.            /* Pump value feeding into tank 2 (on or off) */
+  R t.            /* clk*/
+  R e.            /* sample time */
+End.
+
+Problem.
+L1 <= x1 & x1 <= H1  & L2 <=x2 & x2 <=H2 & V1 =0 & V2 =0 & P =0
+& e >=0  & LL <L1&LL <L2 & FL > 0
+&L1 <H1&L2 <H2&H1 <HH &H2 <HH
+  ->
+  [
+   {
+    f1 := *; f2 := *;
+    {
+        ?(f1 > (HH-x1)/e); V1:= 0; ++
+        ?!(f1 > (HH-x1)/e); {? (x1 <= L1); V1:= 1; ++ ?!(x1 <= L1);}
+    }
+    {
+        ?(x2 <= L2); P:= 1; V2:=1; ++ ?!(x2<=L2);
+    }
+    {
+        ?(V1*f1- V2*P*f2 < (LL-x1)/e | f2 <= FL | V2*P*f2 > (HH-x2)/e); P:= 0; V2:=0; ++
+        ?!(V1*f1- V2*P*f2 < (LL-x1)/e | f2 <= FL | V2*P*f2 > (HH-x2)/e);
+    }
+    t:= 0;
+
+    {x1'=V1*f1-V2*P*f2, x2'= V2*P*f2, t'=1&t<=e& x2>=0 & f1>=0 & f2>=0}
+    
+    }*
+  ] (LL<=x1 & x1 <= HH & LL <= x2 &x2 <=HH)
+End.

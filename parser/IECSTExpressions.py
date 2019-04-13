@@ -183,9 +183,11 @@ class Comparison(Expression):
 
 	#List of "EQUExpressions" that are compared together
 	equExpressions = None
+	equOperators = None
 
-	def __init__(self, equExpressions):
+	def __init__(self, equExpressions, equOperators):
 		self.equExpressions : List[EQUExpression] = equExpressions
+		self.equOperators : List[EQUOperator] = equOperators
 
 class EQUExpression(Expression):
 
@@ -283,6 +285,18 @@ class FloatingPointLiteral(NumericLiteral):
 ########################################################################
 class Operator:
 	operatorStr = None
+
+########################################################################
+# Equal Comparison Operator Classes (adhering to ST Grammar)
+########################################################################
+class EquOperator(Operator):
+	pass
+
+class EqualsOperator(EquOperator):
+	operatorStr = "="
+
+class NotEqualOperator(EquOperator):
+	oepratorStr = "<>"
 
 ########################################################################
 # Comparison Operator Classes (adhering to ST Grammar)

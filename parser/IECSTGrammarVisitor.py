@@ -5,18 +5,33 @@ if __name__ is not None and "." in __name__:
 else:
     from IECSTGrammarParser import IECSTGrammarParser
 
+
+#Added imports 
+from typing import List, TypeVar, Dict
+from IECSTExpressions import *
+
 # This class defines a complete generic visitor for a parse tree produced by IECSTGrammarParser.
 
 class IECSTGrammarVisitor(ParseTreeVisitor):
 
+    program : Program = None
+    config : Configuration = None
+    varDecs: Dict[str, Variable] = {}
+
     # Visit a parse tree produced by IECSTGrammarParser#configurationfile.
     def visitConfigurationfile(self, ctx:IECSTGrammarParser.ConfigurationfileContext):
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
+        return ConfigurationFile(self.program, self.config)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#program.
     def visitProgram(self, ctx:IECSTGrammarParser.ProgramContext):
-        return self.visitChildren(ctx)
+        nameStr : str = ctx.name.getText()
+        varBlocks : List[VarBlock] = []
+        for vBlock in ctx.var_block():
+            varBlocks.append(self.visitVar_block(varBlock))
+        programBlockBody : List[Statement] = self.visitProgram_block_body(ctx.program_block_body())
+        self.program = Program(nameStr, varBlocks, programBlockBody)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#configuration.
@@ -61,17 +76,34 @@ class IECSTGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IECSTGrammarParser#var_block.
     def visitVar_block(self, ctx:IECSTGrammarParser.Var_blockContext):
-        return self.visitChildren(ctx)
+        varList : List[Variable] = []
+        for varDec in ctx.variables():
+            # Each variable dec could have multiple variables declared in a line
+            varList = varList + self.visitVariable_declaration(varDec)
+
+        if (ctx.input() == "true"):
+            return VarInputBlock(varList)
+        elif (ctx.output() == "true"):
+            return VarOutputBlock(varList)
+        else:
+            return VarBlock(varList)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#simpleType.
     def visitSimpleType(self, ctx:IECSTGrammarParser.SimpleTypeContext):
-        return self.visitChildren(ctx)
+        return ctx.name().getText()
 
 
     # Visit a parse tree produced by IECSTGrammarParser#variable_declaration.
     def visitVariable_declaration(self, ctx:IECSTGrammarParser.Variable_declarationContext):
-        return self.visitChildren(ctx)
+        variables : List[Variable] = []
+        varType : str = self.visitSimpleType(ctx.var_type())
+        # Each variable dec could have multiple variables declared in a line
+        for varName in ctx.names():
+            newVar = Variable(varName, varType)
+            variables.append(newVar)
+            self.varDecs[varName] = newVar
+        return variables
 
 
     # Visit a parse tree produced by IECSTGrammarParser#program_block_body.
@@ -81,7 +113,10 @@ class IECSTGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IECSTGrammarParser#statement_list.
     def visitStatement_list(self, ctx:IECSTGrammarParser.Statement_listContext):
-        return self.visitChildren(ctx)
+        statementList : List[Statement] = []
+        for statement in ctx.statement():
+            statementList.append(self.visitStatement(statement))
+        return statementList
 
 
     # Visit a parse tree produced by IECSTGrammarParser#statement.
@@ -91,86 +126,179 @@ class IECSTGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IECSTGrammarParser#assignment_statement.
     def visitAssignment_statement(self, ctx:IECSTGrammarParser.Assignment_statementContext):
-        return self.visitChildren(ctx)
+        varName : str = self.visitVariable(ctx.variable())
+        if varName not in self.varDecs.keys():
+            raise ValueError('Could not find variable in assignment statement')
+        expr = self.visitExpression(ctx.expression())
+        return AssignmnetStatement(self.varDecs[varName], expr)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#if_then_else_statement.
     def visitIf_then_else_statement(self, ctx:IECSTGrammarParser.If_then_else_statementContext):
-        return self.visitChildren(ctx)
+        ifExpressions : List[Expression] = []
+        thenStatements: List[Statement] = []
+        elseStatement: Statement = None
+
+        for i  in range(len(ctx.expression())):
+            ifExpressions.append(self.visitExpression(ctx.expression()[i]))
+            thenStatements.append(self.visitStatement(ctx.expression()[i]))
+        if(len(ctx.expression()) < len(ctx.statement())):
+            elseStatement = self.visitStatement(ctx.statement()[-1])
+
+        return IfThenElseStatement(ifExpressions, thenStatements, elseStatement)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#variable.
     def visitVariable(self, ctx:IECSTGrammarParser.VariableContext):
-        return self.visitChildren(ctx)
+        return name.getText()
 
 
     # Visit a parse tree produced by IECSTGrammarParser#expression.
     def visitExpression(self, ctx:IECSTGrammarParser.ExpressionContext):
-        return self.visitChildren(ctx)
+        xorExpressions : List[XORExpression] = []
+        for xorExpression in ctx.xor_expression():
+            xorExpressions.append(self.visitXor_expression(xorExpression))
+        return Expression(xorExpressions)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#xor_expression.
     def visitXor_expression(self, ctx:IECSTGrammarParser.Xor_expressionContext):
+        andExpressions : List[ANDExpression] = []
+        for andExpression in ctx.and_expression():
+            andExpressions.append(self.visitAnd_expression(andExpression))
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#and_expression.
     def visitAnd_expression(self, ctx:IECSTGrammarParser.And_expressionContext):
-        return self.visitChildren(ctx)
+        comparisons : List[Comparison] = []
+        for comparison in ctx.comparison():
+            comparisons.append(self.visitComparison(comparison))
+        return ANDExpression(comparisons)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#comparison.
     def visitComparison(self, ctx:IECSTGrammarParser.ComparisonContext):
-        return self.visitChildren(ctx)
+        equExpressions : List[EQUExpression] = []
+        equOperators : List[EQUOperator] = []
+        for i in range(len(ctx.equ_expression())):
+            equExpressions.append(self.visitEqu_expression(ctx.equ_expression()[i]))
+            # Only add operator if more than one expression exists.
+            if i > 0:
+                equOperators.append(self.visitEqu_operator(ctx.equ_operator()[(i-1)]))
+        return Comparison(equExpressions, equOperators)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#equ_expression.
     def visitEqu_expression(self, ctx:IECSTGrammarParser.Equ_expressionContext):
-        return self.visitChildren(ctx)
+        addExpressions : List[ADDExpression] = []
+        comparisonOperators : List[ComparisonOperator] = []
+        for i in range(len(ctx.add_expression())):
+            addExpressions.append(self.visitAdd_expression(ctx.add_expression()[i]))
+            # Only add operator if more than one expression exists.
+            if i > 0:
+                comparisonOperators.append(self.visitComparison_operator(ctx.comparison_operator()[(i-1)]))
+        return EQUExpression(addExpressions, comparisonOperators)
+
+
+    # Visit a parse tree produced by IECSTGrammarParser#equ_operator.
+    def visitEqu_operator(self, ctx:IECSTGrammarParser.Equ_operatorContext):
+        if ctx.getText() == "=":
+            return EqualsOperator()
+        elif ctx.getText() == "<>":
+            return NotEqualOperator()
+        else:
+            raise ValueError('Invalid equ_operator')
 
 
     # Visit a parse tree produced by IECSTGrammarParser#comparison_operator.
     def visitComparison_operator(self, ctx:IECSTGrammarParser.Comparison_operatorContext):
-        return self.visitChildren(ctx)
+        if ctx.getText() == ">":
+            return GreaterThanOperator()
+        elif ctx.getText() == "<":
+            return LessThanOperator()
+        elif ctx.getText() == ">=":
+            return GreaterThanOrEqualOperator()
+        elif ctx.getText() == "<=":
+            return LessThanOrEqualOperator()
+        else:
+            raise ValueError('Invalid add_operator')
 
 
     # Visit a parse tree produced by IECSTGrammarParser#add_expression.
     def visitAdd_expression(self, ctx:IECSTGrammarParser.Add_expressionContext):
-        return self.visitChildren(ctx)
+        terms : List[Term] = []
+        addOperators : List[ADDOperator] = []
+        for i in range(len(ctx.term())):
+            terms.append(self.visitTerm(ctx.term()()[i]))
+            # Only add operator if more than one expression exists.
+            if i > 0:
+                addOperators.append(self.visitAdd_operator(ctx.add_operator()[(i-1)]))
+        return ADDExpression(terms, addOperators)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#add_operator.
     def visitAdd_operator(self, ctx:IECSTGrammarParser.Add_operatorContext):
-        return self.visitChildren(ctx)
+        if ctx.getText() == "+":
+            return PlusOperator()
+        elif ctx.getText() == "-":
+            return MinusOperator()
+        else:
+            raise ValueError('Invalid add_operator')
 
 
     # Visit a parse tree produced by IECSTGrammarParser#term.
     def visitTerm(self, ctx:IECSTGrammarParser.TermContext):
-        return self.visitChildren(ctx)
+        powerExpressions : List[PowerExpression] = []
+        multiplyOperators : List[MultiplyOperator] = []
+        for i in range(len(ctx.power_expression())):
+            powerExpressions.append(self.visitPower_expression(ctx.term()()[i]))
+            # Only add operator if more than one expression exists.
+            if i > 0:
+                multiplyOperators.append(self.visitMultiply_operator(ctx.multiply_operator()[(i-1)]))
+        return Term(powerExpressions, multiplyOperators)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#multiply_operator.
     def visitMultiply_operator(self, ctx:IECSTGrammarParser.Multiply_operatorContext):
-        return self.visitChildren(ctx)
+        if ctx.getText() == "*":
+            return MultiplyOperator()
+        elif ctx.getText() == "/":
+            return DivideOperator()
+        else:
+            raise ValueError('Invalid add_operator')
 
 
     # Visit a parse tree produced by IECSTGrammarParser#power_expression.
     def visitPower_expression(self, ctx:IECSTGrammarParser.Power_expressionContext):
-        return self.visitChildren(ctx)
+        unaryExpressions : List[UnaryExpression] = []
+        for unaryExpression in ctx.unary_expression():
+            unaryExpressions.append(self.visitUnary_expression(unaryExpression))
+        return PowerExpression(unaryExpressions)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#unary_expression.
     def visitUnary_expression(self, ctx:IECSTGrammarParser.Unary_expressionContext):
-        return self.visitChildren(ctx)
+        unaryOperator : UnaryOperator = self.visitUnary_operator(ctx.unary_operator())
+        primaryExpression : PrimaryExpression = self.visitPrimary_expression(ctx.primary_expression())
+        return UnaryExpression(primaryExpression, unaryOperator)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#unary_operator.
     def visitUnary_operator(self, ctx:IECSTGrammarParser.Unary_operatorContext):
-        return self.visitChildren(ctx)
+        if ctx.getText() == "-":
+            return  NegateOperator()
+        elif ctx.getText() == "NOT":
+            return LogicalNegateOperator()
+        else:
+            raise ValueError('Invalid add_operator')
 
 
     # Visit a parse tree produced by IECSTGrammarParser#primary_expression.
     def visitPrimary_expression(self, ctx:IECSTGrammarParser.Primary_expressionContext):
+        if ctx.expression() not None:
+            expr : Expression = self.visitExpression(ctx.expression())
+            return PrimaryExpressionExpression(expr)
         return self.visitChildren(ctx)
 
 
@@ -181,16 +309,28 @@ class IECSTGrammarVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IECSTGrammarParser#boolean_literal.
     def visitBoolean_literal(self, ctx:IECSTGrammarParser.Boolean_literalContext):
-        return self.visitChildren(ctx)
-
+        if ctx.getText() == "TRUE":
+            return TRUE()
+        elif ctx.getText() == "FALSE":
+            return FALSE()
+        else:
+            raise ValueError('Invalid boolean literal')
 
     # Visit a parse tree produced by IECSTGrammarParser#numeric_literal.
     def visitNumeric_literal(self, ctx:IECSTGrammarParser.Numeric_literalContext):
-        return self.visitChildren(ctx)
+        if ctx.Floating_point_literal() not None:
+            return FloatingPointLiteral(float(ctx.FloatingPointLiteral().getText()))
+        else:
+            return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by IECSTGrammarParser#integer_literal.
     def visitInteger_literal(self, ctx:IECSTGrammarParser.Integer_literalContext):
+        return IntegerLiteral(int(ctx.getText()))
+
+
+    # Visit a parse tree produced by IECSTGrammarParser#e.
+    def visitE(self, ctx:IECSTGrammarParser.EContext):
         return self.visitChildren(ctx)
 
 

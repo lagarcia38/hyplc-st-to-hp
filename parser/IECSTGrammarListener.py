@@ -224,6 +224,15 @@ class IECSTGrammarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by IECSTGrammarParser#equ_operator.
+    def enterEqu_operator(self, ctx:IECSTGrammarParser.Equ_operatorContext):
+        pass
+
+    # Exit a parse tree produced by IECSTGrammarParser#equ_operator.
+    def exitEqu_operator(self, ctx:IECSTGrammarParser.Equ_operatorContext):
+        pass
+
+
     # Enter a parse tree produced by IECSTGrammarParser#comparison_operator.
     def enterComparison_operator(self, ctx:IECSTGrammarParser.Comparison_operatorContext):
         pass
@@ -338,6 +347,15 @@ class IECSTGrammarListener(ParseTreeListener):
 
     # Exit a parse tree produced by IECSTGrammarParser#integer_literal.
     def exitInteger_literal(self, ctx:IECSTGrammarParser.Integer_literalContext):
+        pass
+
+
+    # Enter a parse tree produced by IECSTGrammarParser#e.
+    def enterE(self, ctx:IECSTGrammarParser.EContext):
+        pass
+
+    # Exit a parse tree produced by IECSTGrammarParser#e.
+    def exitE(self, ctx:IECSTGrammarParser.EContext):
         pass
 
 

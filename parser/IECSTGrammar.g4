@@ -88,10 +88,13 @@ and_expression:
 comparison (('&' | 'AND') comparison)*;
 
 comparison:
-equ_expression (('=' | '<>') equ_expression)*;
+equ_expression (equ_operator equ_expression)*;
 
 equ_expression:
 add_expression (comparison_operator add_expression)*;
+
+equ_operator:
+'=' | '<>';
 
 comparison_operator:
 '<' | '>' | '<=' | '>=';
@@ -170,6 +173,7 @@ fragment Sign : [+\-] ;
 
 ID: [A-Za-z][A-Za-z_0-9]*;
 NIL: WS;
+e: WS;
 WS : [ \n\r\t]+ -> channel(HIDDEN) ;
 Block_comment : '(*' (Block_comment|.)*? '*)' -> channel(HIDDEN) ; // nesting comments allowed
 

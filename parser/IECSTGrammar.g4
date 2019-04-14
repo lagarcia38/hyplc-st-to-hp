@@ -47,9 +47,9 @@ program_configuration:
 
 var_block locals[boolean input, boolean output, boolean temp]
 : ('VAR'
-| { $input=true; } 'VAR_INPUT'
-| { $output=true; } 'VAR_OUTPUT')
-( variables+=variable_declaration* 'END_VAR');
+| { $input=True; } 'VAR_INPUT'
+| { $output=True; } 'VAR_OUTPUT')
+( variables+=variable_declaration* ';' 'END_VAR');
 
 type_rule:
 name=ID #simpleType;
@@ -64,7 +64,7 @@ statement_list:
 statement (';' statement)*';';
 
 statement:
-NIL | assignment_statement | if_then_else_statement;
+assignment_statement | if_then_else_statement;
 
 assignment_statement:
 variable ':=' expression;
@@ -172,8 +172,6 @@ fragment Floating_point_p : [pP] ;
 fragment Sign : [+\-] ;
 
 ID: [A-Za-z][A-Za-z_0-9]*;
-NIL: WS;
-e: WS;
 WS : [ \n\r\t]+ -> channel(HIDDEN) ;
 Block_comment : '(*' (Block_comment|.)*? '*)' -> channel(HIDDEN) ; // nesting comments allowed
 

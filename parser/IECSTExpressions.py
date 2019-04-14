@@ -8,10 +8,10 @@ from abc import abstractmethod
 class ConfigurationFile:
 	program = None
 	config  = None
-    
-    def __init__(self, program, config):
-        self.program : Program = program
-        self.config: Configuration = config
+
+	def __init__(self, program, config):
+		self.program : Program = program
+		self.config: Configuration = config
 
 '''
     Instance of an ST Program 
@@ -125,18 +125,6 @@ class VarOutputBlock(VarBlock):
 
 	ioconfig = 'VAR_OUTPUT'
 
-
-########################################################################
-
-class Variable:
-
-	name = None
-	varType = None
-
-	def __init__(self, name, varType):
-		self.name : str = name
-		self.varType : str = varType
-
 ########################################################################
 # Statement Classes
 ########################################################################
@@ -159,13 +147,13 @@ class IfThenElseStatement(Statement):
 
 	# List of expressions should be same size as list of then statements
 	ifExpressions = None
-	thenStatements = None
-	elseStatement = None
+	thenStatementLists = None
+	elseStatementList = None
 
-	def __init__(self, ifExpressions, thenStatements, elseStatement = None):
+	def __init__(self, ifExpressions, thenStatementLists, elseStatementList = None):
 		self.ifExpressions : List[Expression] = ifExpressions
-		self.thenStatements : List[Statement] = thenStatements
-		self.elseStatement : Statement = elseStatement
+		self.thenStatementLists : List[List[Statement]] = thenStatementLists
+		self.elseStatementList : List[Statement] = elseStatementList
 
 
 ########################################################################
@@ -188,7 +176,7 @@ class XORExpression(Expression):
 	def __init__(self, andExpressions):
 		self.andExpressions : List[ANDExpression] = andExpressions
 
-class ANDExpressions(Expression):
+class ANDExpression(Expression):
 
 	# List of "Comparisons" that are AND'd together
 	comparisons = None
@@ -212,7 +200,7 @@ class EQUExpression(Expression):
 	#List of "ADDExpressions" that are compared using a given operator
 	addExpressions = None
 	#List of associated comparison operators
-	comparisonOperators - None
+	comparisonOperators = None
 
 	def __init__(self, addExpressions, comparisonOperators):
 		self.addExpressions : List[ADDExpression] = addExpressions
@@ -234,7 +222,7 @@ class PowerExpression(Expression):
 	#List of unary expressions which to apply subsequent exponents
 	unaryExpressions  = None
 
-	def __init__(self, unaryExpressions)
+	def __init__(self, unaryExpressions):
 		self.unaryExpressions : List[UnaryExpression] = unaryExpressions
 
 
@@ -297,6 +285,14 @@ class FloatingPointLiteral(NumericLiteral):
 	def __init__(self, value):
 		self.value : float = float(value)
 
+class Variable(PrimaryExpression):
+
+	name = None
+	varType = None
+
+	def __init__(self, name, varType):
+		self.name : str = name
+		self.varType : str = varType
 
 ########################################################################
 # Operator Classes (adhering to ST Grammar)
@@ -344,7 +340,7 @@ class ADDOperator(Operator):
 class PlusOperator(ADDOperator):
 	operatorStr = "+"
 
-class MinusOeprator(ADDOperator):
+class MinusOperator(ADDOperator):
 	operatorStr = "-"
 
 

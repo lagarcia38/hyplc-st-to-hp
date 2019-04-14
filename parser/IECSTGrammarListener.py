@@ -350,12 +350,3 @@ class IECSTGrammarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by IECSTGrammarParser#e.
-    def enterE(self, ctx:IECSTGrammarParser.EContext):
-        pass
-
-    # Exit a parse tree produced by IECSTGrammarParser#e.
-    def exitE(self, ctx:IECSTGrammarParser.EContext):
-        pass
-
-

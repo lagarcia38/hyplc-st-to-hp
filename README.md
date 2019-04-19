@@ -1,18 +1,11 @@
-# HyPLC: Hybrid Programmable Logic Controller Program Translation for Verification
+# HyPLC: Hybrid Programmable Logic Controller Program Translation for Verification[1]
+Programmable Logic Controllers (PLCs) provide a prominent choice of implementation platform for safety-critical industrial control systems. Formal verification provides ways of establishing correctness guarantees, which can be quite important for such safety-critical applications. But since PLC code does not include an analytic model of the system plant, their verification is limited to discrete properties. In this paper, we, thus, start the other way around with hybrid programs that include continuous plant models in addition to discrete control algorithms. Even deep correctness properties of hybrid programs can be formally verified in the theorem prover KeYmaera X that implements differential dynamic logic, dL, for hybrid programs. After verifying the hybrid program, we now present an approach for translating hybrid programs into PLC code. The new tool, **HyPLC**, implements this translation of discrete control code of verified hybrid program models to PLC controller code and, vice versa, the translation of existing PLC code into the discrete control actions for a hybrid program given an additional input of the continuous dynamics of the system to be verified. This approach allows for the generation of real controller code while preserving, by compilation, the correctness of a valid and verified hybrid program. PLCs are common cyber-physical interfaces for safety-critical industrial control applications, and HyPLC serves as a pragmatic tool for bridging formal verification of complex cyber-physical systems at the algorithmic level of hybrid programs with the execution layer of concrete PLC implementations.
 
-Structured Text to Hybrid Program Translation
-============
-This is the half of the HyPLC tool that translates the IEC61131-3 standard structured text programming language for PLCs to a hybrid program specified in differential dynamic logic. This makes up one half of the HyPLC tool presented in [1]. For the converse translation, please visit the project link page. The tool has been directly integrated into the KeYmaera X command-line tool.
-*README TODO: Add usage examples 
+![HyPLC System Overview](./docs/figures/hyplc-overview.jpg)
+
 ##### Usage
-You can use the hyplc-st-to-hp.py script to perform the translation for a given st file as follows:
-* python3 ./hyplc-st-to-hp.py st-file [hp-file]
-where <st-file> is a structured text program file that conforms to the subset of the IEC61131-3 standard defined in our paper, and <hp-file> is an option for providing a hybrid program where the ctrl can be replaced. This can be done by essentially writing a hybrid program as usual and including a placeholder "ctrl" variable where the  ctrl of the system should reside.
+Each translation direction has its own implementation. For the translation of structured text to hybrid programs, please visit the **hyplc-st-to-hp** directory. For the details about the hybrid program to structured text translation implementation, please see the details in the **hyplc-hp-to-st** directory.
 
-
-Installation
-============
-This project depends on ANTLR4 version 4.7.1 as well as Python3. Please note that ANTLR4 is very version-dependent.
 
 Publications
 ============

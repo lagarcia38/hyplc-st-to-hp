@@ -1,5 +1,4 @@
 # Structured Text to Hybrid Program Translation
-============
 This is the half of the HyPLC tool that translates the IEC61131-3 standard structured text programming language for PLCs to a hybrid program specified in differential dynamic logic. This makes up one half of the HyPLC tool presented in [1]. For the converse translation, please visit the project link page. The tool has been directly integrated into the KeYmaera X command-line tool.
 *README TODO: Add usage examples 
 ##### Usage
